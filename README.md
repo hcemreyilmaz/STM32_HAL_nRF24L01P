@@ -1,7 +1,7 @@
 # #[PICProje](https://picproje.org/)
 
-##### [Örnekler](#Örnekler)
-##### [Örnek CubeMX Konfigurasyonu](#Örnek-cubemx-konfigurasyonu)
+##### [Örnekler'e git](#Örnekler)
+##### [Örnek CubeMX Konfigurasyonu'na git](#Örnek-cubemx-konfigurasyonu)
 
 ##### Kütüphaneyi hızlıca kullanmaya başlamak için aşağıdaki uyarıları dikkate almalısınız.
 
