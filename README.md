@@ -1,30 +1,30 @@
-### #PICProje.org
-##### Kütüphaneyi hızlıca kullanmaya başlamak için aşağıdaki uyarıları dikkate almalısınız.
+### #[PICProje](https://picproje.org/)
+##### KÃ¼tÃ¼phaneyi hÄ±zlÄ±ca kullanmaya baÅŸlamak iÃ§in aÅŸaÄŸÄ±daki uyarÄ±larÄ± dikkate almalÄ±sÄ±nÄ±z.
 
-Bu kütüphane CubeMX yardımcı programı ile oluşturulacak projelere 
-hızlıca entegre edilebilecek şekilde optimize edilmiştir. 
+Bu kÃ¼tÃ¼phane CubeMX yardÄ±mcÄ± programÄ± ile oluÅŸturulacak projelere 
+hÄ±zlÄ±ca entegre edilebilecek ÅŸekilde optimize edilmiÅŸtir. 
 
-Projenizi CubeMX'te oluştururken bir adet SPI birimini, Full-Duplex modda, 
-Hardware nSS desteği olmaksızın, en fazla 10Mbit hızında olacak şekilde aktif etmelisiniz. Buna ek olarak iki adet GPIO pinini mümkün olan en yüksek hızı seçerek Output Push-Pull modda aktif etmelisiniz. 
+Projenizi CubeMX'te oluÅŸtururken bir adet SPI birimini, Full-Duplex modda, 
+Hardware nSS desteÄŸi olmaksÄ±zÄ±n, en fazla 10Mbit hÄ±zÄ±nda olacak ÅŸekilde aktif etmelisiniz. Buna ek olarak iki adet GPIO pinini mÃ¼mkÃ¼n olan en yÃ¼ksek hÄ±zÄ± seÃ§erek Output Push-Pull modda aktif etmelisiniz. 
 
-Bu pinlerden birinin kullanıcı tanımlı etiketi (User Label) xxx_CE, diğerinin ise xxx_nSS olmalı. 
+Bu pinlerden birinin kullanÄ±cÄ± tanÄ±mlÄ± etiketi (User Label) xxx_CE, diÄŸerinin ise xxx_nSS olmalÄ±. 
 
-**Not: Etiketlerin bir önemi yok ancak karışıklık yaratmamak adına _nSS ve _CE eklemelerini yapınız.**
+**Not: Etiketlerin bir Ã¶nemi yok ancak karÄ±ÅŸÄ±klÄ±k yaratmamak adÄ±na _nSS ve _CE eklemelerini yapÄ±nÄ±z.**
 
-Ayrıca bir adet GPIO_EXTIx (External Interrupt) pini aktif etmelisiniz. 
+AyrÄ±ca bir adet GPIO_EXTIx (External Interrupt) pini aktif etmelisiniz. 
 
-Önemli Not: CubeMX Code Generation safhasında "Generate peripheral initialization as a pair of '.c/.h' files per peripheral" seçeneği aktif olmalı.
+Ã–nemli Not: CubeMX Code Generation safhasÄ±nda "Generate peripheral initialization as a pair of '.c/.h' files per peripheral" seÃ§eneÄŸi aktif olmalÄ±.
 
-# Örnek CubeMX Konfigurasyonu:
+# Ã–rnek CubeMX Konfigurasyonu:
 ## GPIO
-#### xxx_CE ve xxx_nSS için;
+#### xxx_CE ve xxx_nSS iÃ§in;
     -GPIO Output Level	    : High
     -GPIO Mode		        : Output Push Pull
     -GPIO Pull-up/Pull-down	: No pull-up and no pull-down
-    -Maximum output speed	: Very High (veya mümkün olan en yüksek hız)
+    -Maximum output speed	: Very High (veya mÃ¼mkÃ¼n olan en yÃ¼ksek hÄ±z)
     -User Label		        : nRF24L01P_CE (ve _nSS)
 
-#### -GPIO_EXTIx için;
+#### -GPIO_EXTIx iÃ§in;
     -GPIO Mode		        : External Interrupt Mode with Rising edge...
     -GPIO Pull-up/Pull-down	: No pull-up and no pull-down
     -User Label		        : Don't Matter...
@@ -37,8 +37,8 @@ Ayrıca bir adet GPIO_EXTIx (External Interrupt) pini aktif etmelisiniz.
     -Data Size		        : 8 Bits
     -First Bit              : MSB First
 	
-	-Prescaler		        : 256 (10MBit'i geçmeyecek herhangi bir değer.)
-    -BaudRate*	            : 175.781 KBits/s (Test amaçlı düşük hız)
+	-Prescaler		        : 256 (10MBit'i geÃ§meyecek herhangi bir deÄŸer.)
+    -BaudRate*	            : 175.781 KBits/s (Test amaÃ§lÄ± dÃ¼ÅŸÃ¼k hÄ±z)
 	-Clock Polarity (CPOL)	: Low
 	-Clock Phase (CPHA)	    : 1 Edge
 	
