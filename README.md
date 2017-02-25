@@ -18,29 +18,40 @@ Ayrıca bir adet GPIO_EXTIx (External Interrupt) pini aktif etmelisiniz.
 # Örnek CubeMX Konfigurasyonu:
 ## GPIO
 #### xxx_CE ve xxx_nSS için;
-    -GPIO Output Level	    : High
-    -GPIO Mode		        : Output Push Pull
-    -GPIO Pull-up/Pull-down	: No pull-up and no pull-down
-    -Maximum output speed	: Very High (veya mümkün olan en yüksek hız)
-    -User Label		        : nRF24L01P_CE (ve _nSS)
+	-GPIO Output Level	: High
+	-GPIO Mode		: Output Push Pull
+	-GPIO Pull-up/Pull-down	: No pull-up and no pull-down
+	-Maximum output speed	: Very High (veya mümkün olan en yüksek hız)
+	-User Label		: nRF24L01P_CE (ve _nSS)
 
 #### -GPIO_EXTIx için;
-    -GPIO Mode		        : External Interrupt Mode with Rising edge...
-    -GPIO Pull-up/Pull-down	: No pull-up and no pull-down
-    -User Label		        : Don't Matter...
+	-GPIO Mode		: External Interrupt Mode with Rising edge...
+	-GPIO Pull-up/Pull-down	: No pull-up and no pull-down
+	-User Label		: Don't Matter...
 
 ## NVIC
-    -EXTI xxx [xx xx]       : Enabled ? Yes.
+	-EXTI xxx [xx xx]	: Enabled ? Yes.
 
 ## SPIx
-    -Frame Format	        : Motorola
-    -Data Size		        : 8 Bits
-    -First Bit              : MSB First
+	-Frame Format	        : Motorola
+	-Data Size		: 8 Bits
+	-First Bit		: MSB First
 	
-	-Prescaler		        : 256 (10MBit'i geçmeyecek herhangi bir değer.)
-    -BaudRate*	            : 175.781 KBits/s (Test amaçlı düşük hız)
+	-Prescaler		: 256 (10MBit'i geçmeyecek herhangi bir değer.)
+	-BaudRate*		: 175.781 KBits/s (Test amaçlı düşük hız)
 	-Clock Polarity (CPOL)	: Low
-	-Clock Phase (CPHA)	    : 1 Edge
+	-Clock Phase (CPHA)	: 1 Edge
 	
-	-CRC Calculation	    : Disabled
-	-nSS Signal Type	    : Software
+	-CRC Calculation	: Disabled
+	-nSS Signal Type 	: Software
+
+# Örnekler
+#### Basic TX RX Examples
+	-Example 01		: Basic TX & RX example *without* ACK.
+				: Used STM32F103C8T6 as Transmitter
+				: and STM32F429I-Disc1 as Receiver
+				: Activated UART Debugging both of them.
+	-Example 02		: Basic TX & RX example *with* ACK.
+				: Used STM32F103C8T6 as Transmitter
+				: and STM32F429I-Disc1 as Receiver
+				: Activated UART Debugging both of them.
