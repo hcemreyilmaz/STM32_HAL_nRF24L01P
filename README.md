@@ -1,4 +1,4 @@
-# #[myBlog](http://maviled.wordpress.org/)
+# #[myBlog](http://maviled.wordpress.com/)
 
 ##### [Örnekler'e git](#Örnekler)
 ##### [Örnek CubeMX Konfigurasyonu'na git](#Örnek-cubemx-konfigurasyonu)
