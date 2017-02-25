@@ -73,6 +73,7 @@ HAL_StatusTypeDef HAL_nRF24L01P_IRQ_Handler(nRF24L01P *nRF)
 		HAL_nRF24L01P_WriteRegister(nRF, nRF_STATUS, &regStatus);
 		HAL_nRF24L01P_ReadRegister(nRF, nRF_FIFO_STATUS, &regFIFO_Status);
 		} while((regFIFO_Status & 0x01) == 0x00);
+		HAL_nRF24L01P_CE_High(nRF);
 	}
 	/* ---- TX Sent Int.---- */
 	if((regStatus & (1 << 5)) != 0)
@@ -90,7 +91,7 @@ HAL_StatusTypeDef HAL_nRF24L01P_IRQ_Handler(nRF24L01P *nRF)
 		regStatus |= (1 << 4);
 		
 		HAL_nRF24L01P_FlushTX(nRF);
-		HAL_nRF24L01P_PowerUP(nRF, nRF_DISABLE);	// bi kapatip açalim da düzelsin...
+		HAL_nRF24L01P_PowerUP(nRF, nRF_DISABLE);	// bi kapatip aÃ§alim da dÃ¼zelsin...
 		HAL_nRF24L01P_PowerUP(nRF, nRF_ENABLE);
 		
 		HAL_nRF24L01P_CE_Low(nRF);
