@@ -54,8 +54,8 @@ Ayrıca bir adet GPIO_EXTIx (External Interrupt) pini aktif etmelisiniz.
 	-Example 01		        : Basic TX & RX example *without* ACK.
 				            : Used STM32F103C8T6 as Transmitter
 				            : and STM32F429I-Disc1 as Receiver
-				            : Activated UART Debugging both of them.
+				            : Activated UART Debugging for both of them.
 	-Example 02	        	: Basic TX & RX example *with* ACK.
 				            : Used STM32F103C8T6 as Transmitter
                             : and STM32F429I-Disc1 as Receiver
-                            : Activated UART Debugging both of them.
+                            : Activated UART Debugging for both of them.
