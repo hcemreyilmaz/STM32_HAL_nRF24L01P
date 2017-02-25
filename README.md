@@ -1,4 +1,8 @@
-### #[PICProje](https://picproje.org/)
+# #[PICProje](https://picproje.org/)
+
+##### [Örnekler](#Örnekler)
+##### [Örnek CubeMX Konfigurasyonu](#Örnek-cubemx-konfigurasyonu)
+
 ##### Kütüphaneyi hızlıca kullanmaya başlamak için aşağıdaki uyarıları dikkate almalısınız.
 
 Bu kütüphane CubeMX yardımcı programı ile oluşturulacak projelere 
