@@ -19,12 +19,12 @@ HAL_StatusTypeDef HAL_nRF24L01P_Init(nRF24L01P *nRF)
 	} while((regValue & 0x02) == 0x00); // Did device powered up? 
 	
 	/* ---- InitProcess ---- */
-	retValue |= HAL_nRF24L01P_SetPRXWidth(nRF, nRF_PAYLOAD_P0, nRF->PayloadWidth);
-	retValue |= HAL_nRF24L01P_SetPRXAddress(nRF, nRF->RX_Address, nRF_PAYLOAD_P0);
+	retValue |= HAL_nRF24L01P_SetPRXWidth(nRF, nRF->PayloadWidth, nRF_DATA_PIPE_0);
+	retValue |= HAL_nRF24L01P_SetPRXAddress(nRF, nRF->RX_Address, nRF_DATA_PIPE_0);
 	retValue |= HAL_nRF24L01P_SetPTXAddress(nRF, nRF->TX_Address);
 	retValue |= HAL_nRF24L01P_RXDataReadyIRQ(nRF, nRF_ENABLE);
 	retValue |= HAL_nRF24L01P_TXDataSentIRQ(nRF, nRF_ENABLE);
-	retValue |= HAL_nRF24L01P_MaxReTransmitIRQ(nRF, nRF_DISABLE);
+	retValue |= HAL_nRF24L01P_MaxReTransmitIRQ(nRF, nRF_ENABLE);
 	retValue |= HAL_nRF24L01P_CRC(nRF, nRF_ENABLE);
 	retValue |= HAL_nRF24L01P_SetCRCWidth(nRF, nRF->CRC_Width);
 	retValue |= HAL_nRF24L01P_SetAddressWidth(nRF, nRF->ADDR_Width);
@@ -33,9 +33,14 @@ HAL_StatusTypeDef HAL_nRF24L01P_Init(nRF24L01P *nRF)
 	retValue |= HAL_nRF24L01P_SetRetransmissionCount(nRF, nRF->RetransmitCount);
 	retValue |= HAL_nRF24L01P_SetRetransmissionDelay(nRF, nRF->RetransmitDelay);
 	
-	retValue |= HAL_nRF24L01P_RXPipe(nRF, nRF_DATA_PIPE_0);
+	retValue |= HAL_nRF24L01P_DynACK(nRF, nRF_ENABLE);
+	retValue |= HAL_nRF24L01P_ACKPayload(nRF, nRF_ENABLE);
+	retValue |= HAL_nRF24L01P_DynPayload(nRF, nRF_ENABLE);
 	
-	retValue |= HAL_nRF24L01P_AutoACK(nRF, nRF_DATA_PIPE_0, nRF_DISABLE);
+	retValue |= HAL_nRF24L01P_RXPipe(nRF, nRF_DATA_PIPE_0, nRF_ENABLE);
+	retValue |= HAL_nRF24L01P_DPLPipe(nRF, nRF_DATA_PIPE_0, nRF_ENABLE);
+	
+	retValue |= HAL_nRF24L01P_AutoACK(nRF, nRF_DATA_PIPE_0, nRF_ENABLE);
 	retValue |= HAL_nRF24L01P_AutoACK(nRF, nRF_DATA_PIPE_1, nRF_DISABLE);
 	retValue |= HAL_nRF24L01P_AutoACK(nRF, nRF_DATA_PIPE_2, nRF_DISABLE);
 	retValue |= HAL_nRF24L01P_AutoACK(nRF, nRF_DATA_PIPE_3, nRF_DISABLE);
@@ -45,6 +50,7 @@ HAL_StatusTypeDef HAL_nRF24L01P_Init(nRF24L01P *nRF)
 	retValue |= HAL_nRF24L01P_ClearInterrupts(nRF);
 	
 	retValue |= HAL_nRF24L01P_TXRX(nRF, nRF_STATE_RX);
+	retValue |= HAL_nRF24L01P_FlushRX(nRF);
 	
 	if(retValue != HAL_OK)
 	{
@@ -91,7 +97,7 @@ HAL_StatusTypeDef HAL_nRF24L01P_IRQ_Handler(nRF24L01P *nRF)
 		regStatus |= (1 << 4);
 		
 		HAL_nRF24L01P_FlushTX(nRF);
-		HAL_nRF24L01P_PowerUP(nRF, nRF_DISABLE);	// bi kapatip aÃ§alim da dÃ¼zelsin...
+		HAL_nRF24L01P_PowerUP(nRF, nRF_DISABLE);	// bi kapatip açalim da düzelsin...
 		HAL_nRF24L01P_PowerUP(nRF, nRF_ENABLE);
 		
 		HAL_nRF24L01P_CE_Low(nRF);
@@ -133,13 +139,26 @@ HAL_StatusTypeDef HAL_nRF24L01P_TransmitPacket(nRF24L01P *nRF, uint8_t *Data)
 	return HAL_OK;
 }
 
-HAL_StatusTypeDef HAL_nRF24L01P_SetPRXWidth(nRF24L01P *nRF, nRF_PAYLOAD Payload, nRF_PRX_WIDTH Width)
+HAL_StatusTypeDef HAL_nRF24L01P_TransmitPacketACK(nRF24L01P *nRF, uint8_t *Data, nRF_DATA_PIPE Pipe)
+{
+	nRF->Busy = 1;
+
+	HAL_nRF24L01P_CE_Low(nRF);
+	HAL_nRF24L01P_TXRX(nRF, nRF_STATE_TX);
+	HAL_nRF24L01P_WriteTXPayloadACK(nRF, Data, Pipe);
+	HAL_nRF24L01P_CE_High(nRF);
+
+	while(nRF->Busy);	// TODO: Add *timeout* functionality
+	return HAL_OK;
+}
+
+HAL_StatusTypeDef HAL_nRF24L01P_SetPRXWidth(nRF24L01P *nRF, nRF_PRX_WIDTH Width, nRF_DATA_PIPE Pipe)
 {
 	/* ---- Local Vars. ---- */
 	uint8_t regAddr, regData;
 	regData = Width & 0x3F;
 	/* ---- Pre Process ---- */
-	switch(Payload)
+	switch(Pipe)
 	{
 		case 0: //P0
 			regAddr = nRF_RX_PW_P0;
@@ -182,14 +201,14 @@ HAL_StatusTypeDef HAL_nRF24L01P_SetPTXAddress(nRF24L01P *nRF, uint8_t *pRegData)
 	return HAL_OK;
 }
 
-HAL_StatusTypeDef HAL_nRF24L01P_SetPRXAddress(nRF24L01P *nRF, uint8_t *pRegData, nRF_PAYLOAD Payload)
+HAL_StatusTypeDef HAL_nRF24L01P_SetPRXAddress(nRF24L01P *nRF, uint8_t *pRegData, nRF_DATA_PIPE Pipe)
 {
 	/* ---- Local Vars. ---- */
 	uint8_t Zero[5];
 	uint8_t Size;
 	uint8_t regAddr;
 	/* ---- Pre Process ---- */
-	switch(Payload)
+	switch(Pipe)
 	{
 		case 0: //P0
 			Size = 5;
@@ -220,6 +239,102 @@ HAL_StatusTypeDef HAL_nRF24L01P_SetPRXAddress(nRF24L01P *nRF, uint8_t *pRegData,
 	}
 	/* ---- Fcn Process ---- */
 	if(HAL_nRF24L01P_SendCommand(nRF, nRF_CMD_W_REGISTER + regAddr, pRegData, Zero, Size) != HAL_OK)
+	{
+		return HAL_ERROR;
+	}
+	return HAL_OK;
+}
+
+HAL_StatusTypeDef HAL_nRF24L01P_DPLPipe(nRF24L01P *nRF, nRF_DATA_PIPE Pipe, nRF_STATE DPL_State)
+{
+		/* ---- Local Vars. ---- */
+	uint8_t regValue;
+	/* ---- Pre Process ---- */
+	if(HAL_nRF24L01P_ReadRegister(nRF, nRF_DYNPD, &regValue) != HAL_OK)
+	{
+		return HAL_ERROR;
+	}
+	
+	if(DPL_State)
+	{
+		regValue |= (1 << Pipe);
+	} else {
+		regValue &= ~(1 << Pipe);
+	}
+	/* ---- Fcn Process ---- */
+	if(HAL_nRF24L01P_WriteRegister(nRF, nRF_DYNPD, &regValue) != HAL_OK)
+	{
+		return HAL_ERROR;
+	}
+	return HAL_OK;
+}
+
+HAL_StatusTypeDef HAL_nRF24L01P_DynPayload(nRF24L01P *nRF, nRF_STATE DPL_State)
+{
+	/* ---- Local Vars. ---- */
+	uint8_t regValue;
+	/* ---- Pre Process ---- */
+	if(HAL_nRF24L01P_ReadRegister(nRF, nRF_FEATURE, &regValue) != HAL_OK)
+	{
+		return HAL_ERROR;
+	}
+	
+	if(DPL_State)
+	{
+		regValue |= (1 << 2);
+	} else {
+		regValue &= ~(1 << 2);
+	}
+	/* ---- Fcn Process ---- */
+	if(HAL_nRF24L01P_WriteRegister(nRF, nRF_FEATURE, &regValue) != HAL_OK)
+	{
+		return HAL_ERROR;
+	}
+	return HAL_OK;
+}
+
+HAL_StatusTypeDef HAL_nRF24L01P_ACKPayload(nRF24L01P *nRF, nRF_STATE ACK_State)
+{
+	/* ---- Local Vars. ---- */
+	uint8_t regValue;
+	/* ---- Pre Process ---- */
+	if(HAL_nRF24L01P_ReadRegister(nRF, nRF_FEATURE, &regValue) != HAL_OK)
+	{
+		return HAL_ERROR;
+	}
+	
+	if(ACK_State)
+	{
+		regValue |= (1 << 1);
+	} else {
+		regValue &= ~(1 << 1);
+	}
+	/* ---- Fcn Process ---- */
+	if(HAL_nRF24L01P_WriteRegister(nRF, nRF_FEATURE, &regValue) != HAL_OK)
+	{
+		return HAL_ERROR;
+	}
+	return HAL_OK;
+}
+
+HAL_StatusTypeDef HAL_nRF24L01P_DynACK(nRF24L01P *nRF, nRF_STATE ACK_State)
+{
+	/* ---- Local Vars. ---- */
+	uint8_t regValue;
+	/* ---- Pre Process ---- */
+	if(HAL_nRF24L01P_ReadRegister(nRF, nRF_FEATURE, &regValue) != HAL_OK)
+	{
+		return HAL_ERROR;
+	}
+	
+	if(ACK_State)
+	{
+		regValue |= (1 << 0);
+	} else {
+		regValue &= ~(1 << 0);
+	}
+	/* ---- Fcn Process ---- */
+	if(HAL_nRF24L01P_WriteRegister(nRF, nRF_FEATURE, &regValue) != HAL_OK)
 	{
 		return HAL_ERROR;
 	}
@@ -421,7 +536,7 @@ HAL_StatusTypeDef HAL_nRF24L01P_AutoACK(nRF24L01P *nRF, nRF_DATA_PIPE Pipe, nRF_
 	return HAL_OK;
 }
 
-HAL_StatusTypeDef HAL_nRF24L01P_RXPipe(nRF24L01P *nRF, nRF_DATA_PIPE Pipe)
+HAL_StatusTypeDef HAL_nRF24L01P_RXPipe(nRF24L01P *nRF, nRF_DATA_PIPE Pipe, nRF_STATE Pipe_State)
 {
 	/* ---- Local Vars. ---- */
 	uint8_t regValue;
@@ -432,7 +547,12 @@ HAL_StatusTypeDef HAL_nRF24L01P_RXPipe(nRF24L01P *nRF, nRF_DATA_PIPE Pipe)
 	}
 	
 	Pipe &= (0x3F); //nRF_EN_RXADDR reg's 7. bit is Reserved
-	regValue |= (1 << Pipe); //nRF_EN_RXADDR reg is Configured
+	if(Pipe_State)
+	{
+		regValue |= (1 << Pipe);
+	} else {
+		regValue &= ~(1 << Pipe);
+	} //nRF_EN_RXADDR reg is Configured
 	
 	/* ---- Fcn Process ---- */
 	if(HAL_nRF24L01P_WriteRegister(nRF, nRF_EN_RXADDR, &regValue) != HAL_OK)
@@ -659,6 +779,19 @@ HAL_StatusTypeDef HAL_nRF24L01P_WriteTXPayload(nRF24L01P *nRF, uint8_t *pRegData
 	uint8_t Zero[nRF->PayloadWidth];
 	/* ---- Fcn Process ---- */
 	if(HAL_nRF24L01P_SendCommand(nRF, nRF_CMD_W_TX_PAYLOAD, pRegData, Zero, nRF->PayloadWidth) != HAL_OK)
+	{
+		return HAL_ERROR;
+	}
+	return HAL_OK;
+}
+
+HAL_StatusTypeDef HAL_nRF24L01P_WriteTXPayloadACK(nRF24L01P *nRF, uint8_t *pRegData, nRF_DATA_PIPE Pipe)
+{
+	/* ---- Local Vars. ---- */
+	uint8_t Zero[nRF->PayloadWidth];
+	Pipe &= 0x07;
+	/* ---- Fcn Process ---- */
+	if(HAL_nRF24L01P_SendCommand(nRF, nRF_CMD_W_ACK_PAYLOAD + Pipe, pRegData, Zero, nRF->PayloadWidth) != HAL_OK)
 	{
 		return HAL_ERROR;
 	}

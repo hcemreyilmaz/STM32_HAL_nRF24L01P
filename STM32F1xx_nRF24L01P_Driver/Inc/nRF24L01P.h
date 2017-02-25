@@ -46,16 +46,8 @@
 #define nRF_RX_PW_P4								0x15  // Size of receive data in channel 4
 #define nRF_RX_PW_P5								0x16  // Size of receive data in channel 5
 #define nRF_FIFO_STATUS							0x17  // FIFO Status
-
-
-typedef enum{
-	nRF_PAYLOAD_P0 = 0,
-	nRF_PAYLOAD_P1 = 1,
-	nRF_PAYLOAD_P2 = 2,
-	nRF_PAYLOAD_P3 = 3,
-	nRF_PAYLOAD_P4 = 4,
-	nRF_PAYLOAD_P5 = 5
-} nRF_PAYLOAD;
+#define nRF_DYNPD										0x1C  // Dynamic Payload State for pipes
+#define nRF_FEATURE									0x1D  // FEATURE Register
 
 typedef enum{
 	nRF_DATA_PIPE_0 = 0,
@@ -206,6 +198,7 @@ HAL_StatusTypeDef HAL_nRF24L01P_ReadRegister(nRF24L01P *nRF, uint8_t regAddr, ui
 HAL_StatusTypeDef HAL_nRF24L01P_WriteRegister(nRF24L01P *nRF, uint8_t regAddr, uint8_t *pRegData);
 HAL_StatusTypeDef HAL_nRF24L01P_ReadRXPayload(nRF24L01P *nRF, uint8_t *pRegData);
 HAL_StatusTypeDef HAL_nRF24L01P_WriteTXPayload(nRF24L01P *nRF, uint8_t *pRegData);
+HAL_StatusTypeDef HAL_nRF24L01P_WriteTXPayloadACK(nRF24L01P *nRF, uint8_t *pRegData, nRF_DATA_PIPE Pipe);
 HAL_StatusTypeDef HAL_nRF24L01P_FlushRX(nRF24L01P *nRF);
 HAL_StatusTypeDef HAL_nRF24L01P_FlushTX(nRF24L01P *nRF);
 HAL_StatusTypeDef HAL_nRF24L01P_SetDataRate(nRF24L01P *nRF, nRF_DATA_RATE Rate);
@@ -216,7 +209,7 @@ HAL_StatusTypeDef HAL_nRF24L01P_SetRFChannel(nRF24L01P *nRF, uint8_t Channel);
 HAL_StatusTypeDef HAL_nRF24L01P_SetRetransmissionCount(nRF24L01P *nRF, nRF_RETX_COUNT Count);
 HAL_StatusTypeDef HAL_nRF24L01P_SetRetransmissionDelay(nRF24L01P *nRF, nRF_RETX_DELAY Delay);
 HAL_StatusTypeDef HAL_nRF24L01P_SetAddressWidth(nRF24L01P *nRF, nRF_ADDR_WIDTH AddrWidth);
-HAL_StatusTypeDef HAL_nRF24L01P_RXPipe(nRF24L01P *nRF, nRF_DATA_PIPE Pipe);
+HAL_StatusTypeDef HAL_nRF24L01P_RXPipe(nRF24L01P *nRF, nRF_DATA_PIPE Pipe, nRF_STATE Pipe_State);
 HAL_StatusTypeDef HAL_nRF24L01P_AutoACK(nRF24L01P *nRF, nRF_DATA_PIPE Pipe, nRF_STATE ACK_State);
 HAL_StatusTypeDef HAL_nRF24L01P_CRC(nRF24L01P *nRF, nRF_STATE CRC_State);
 HAL_StatusTypeDef HAL_nRF24L01P_SetCRCWidth(nRF24L01P *nRF, nRF_CRC_WIDTH CRC_Width);
@@ -225,10 +218,16 @@ HAL_StatusTypeDef HAL_nRF24L01P_TXRX(nRF24L01P *nRF, nRF_TXRX_STATE TxRx_State);
 HAL_StatusTypeDef HAL_nRF24L01P_RXDataReadyIRQ(nRF24L01P *nRF, nRF_STATE IRQ_State);
 HAL_StatusTypeDef HAL_nRF24L01P_TXDataSentIRQ(nRF24L01P *nRF, nRF_STATE IRQ_State);
 HAL_StatusTypeDef HAL_nRF24L01P_MaxReTransmitIRQ(nRF24L01P *nRF, nRF_STATE IRQ_State);
-HAL_StatusTypeDef HAL_nRF24L01P_SetPRXAddress(nRF24L01P *nRF, uint8_t *pRegData, nRF_PAYLOAD Payload);
+HAL_StatusTypeDef HAL_nRF24L01P_SetPRXAddress(nRF24L01P *nRF, uint8_t *pRegData, nRF_DATA_PIPE Pipe);
 HAL_StatusTypeDef HAL_nRF24L01P_SetPTXAddress(nRF24L01P *nRF, uint8_t *pRegData);
-HAL_StatusTypeDef HAL_nRF24L01P_SetPRXWidth(nRF24L01P *nRF, nRF_PAYLOAD Payload, nRF_PRX_WIDTH Width);
+HAL_StatusTypeDef HAL_nRF24L01P_SetPRXWidth(nRF24L01P *nRF, nRF_PRX_WIDTH Width, nRF_DATA_PIPE Pipe);
+HAL_StatusTypeDef HAL_nRF24L01P_DynACK(nRF24L01P *nRF, nRF_STATE ACK_State);
+HAL_StatusTypeDef HAL_nRF24L01P_ACKPayload(nRF24L01P *nRF, nRF_STATE ACK_State);
+HAL_StatusTypeDef HAL_nRF24L01P_DynPayload(nRF24L01P *nRF, nRF_STATE DPL_State);
+HAL_StatusTypeDef HAL_nRF24L01P_DPLPipe(nRF24L01P *nRF, nRF_DATA_PIPE Pipe, nRF_STATE DPL_State);
+
 HAL_StatusTypeDef HAL_nRF24L01P_TransmitPacket(nRF24L01P *nRF, uint8_t *Data);
+HAL_StatusTypeDef HAL_nRF24L01P_TransmitPacketACK(nRF24L01P *nRF, uint8_t *Data, nRF_DATA_PIPE Pipe);
 HAL_StatusTypeDef HAL_nRF24L01P_ReceivePacket(nRF24L01P *nRF, uint8_t *Data);
 HAL_StatusTypeDef HAL_nRF24L01P_IRQ_Handler(nRF24L01P *nRF);
 HAL_StatusTypeDef HAL_nRF24L01P_Init(nRF24L01P *nRF);
