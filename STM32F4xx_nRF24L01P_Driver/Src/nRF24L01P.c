@@ -1,5 +1,4 @@
 #include "nRF24L01P.h"
-extern UART_HandleTypeDef huart1;
 HAL_StatusTypeDef HAL_nRF24L01P_Init(nRF24L01P *nRF)
 {
 	/* ---- Local Vars. ---- */
@@ -97,7 +96,7 @@ HAL_StatusTypeDef HAL_nRF24L01P_IRQ_Handler(nRF24L01P *nRF)
 		regStatus |= (1 << 4);
 		
 		HAL_nRF24L01P_FlushTX(nRF);
-		HAL_nRF24L01P_PowerUP(nRF, nRF_DISABLE);	// bi kapatip açalim da düzelsin...
+		HAL_nRF24L01P_PowerUP(nRF, nRF_DISABLE);	// bi kapatip aÃ§alim da dÃ¼zelsin...
 		HAL_nRF24L01P_PowerUP(nRF, nRF_ENABLE);
 		
 		HAL_nRF24L01P_CE_Low(nRF);
